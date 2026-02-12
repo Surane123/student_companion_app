@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Companion App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .container { max-width: 1200px; }
+        .card { margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .emoji { font-size: 1.5em; }
+        .priority-high { border-left: 4px solid #dc3545; }
+        .priority-medium { border-left: 4px solid #ffc107; }
+        .priority-low { border-left: 4px solid #28a745; }
+        .stats-card { background-color: #f8f9fa; }
+        .study-timer { font-size: 2em; font-weight: bold; }
+        .nav-tabs { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">🎓 Student Companion App</h1>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="notes-tab" data-bs-toggle="tab" href="#notes" role="tab">Notes & Mood</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tasks-tab" data-bs-toggle="tab" href="#tasks" role="tab">Tasks</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="study-tab" data-bs-toggle="tab" href="#study" role="tab">Study Sessions</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                <div class="row">
+                    <!-- Statistics Cards -->
+                    <div class="col-md-4">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Study Stats</h5>
+                                <div id="studyStats"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Quick Actions -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Quick Actions</h5>
+                                <button class="btn btn-primary m-1" onclick="showAddNote()">Add Note</button>
+                                <button class="btn btn-info m-1" onclick="showMoodCheck()">Check Mood</button>
+                                <button class="btn btn-success m-1" onclick="showAddTask()">Add Task</button>
+                                <button class="btn btn-warning m-1" onclick="startStudySession()">Start Study Session</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes & Mood Tab -->
+            <div class="tab-pane fade" id="notes" role="tabpanel">
+                <div class="row">
+                    <!-- Add Note Form -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Add Note</h5>
+                                <form id="noteForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Category</label>
+                                        <select class="form-select" id="noteCategory" required>
+                                            <!-- Populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Priority</label>
+                                        <select class="form-select" id="notePriority">
+                                            <option value="1">Low</option>
+                                            <option value="2">Medium</option>
+                                            <option value="3">High</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Note</label>
+                                        <textarea class="form-control" id="noteText" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Note</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Mood Check Form -->
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Mood Check</h5>
+                                <form id="moodForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">How are you feeling?</label>
+                                        <textarea class="form-control" id="moodText" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-info">Check Mood</button>
+                                </form>
+                                <div id="moodResult" class="alert alert-info mt-3 d-none"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes Display -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Your Notes</h5>
+                                <div id="notesList"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mood History -->
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Mood History</h5>
+                                <div id="moodsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div class="tab-pane fade" id="tasks" role="tabpanel">
+                <div class="row">
+                    <!-- Add Task Form -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Add Task</h5>
+                                <form id="taskForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Title</label>
+                                        <input type="text" class="form-control" id="taskTitle" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" id="taskDescription" rows="2"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Subject</label>
+                                        <select class="form-select" id="taskSubject" required>
+                                            <!-- Populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Due Date</label>
+                                        <input type="date" class="form-control" id="taskDueDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Priority</label>
+                                        <select class="form-select" id="taskPriority">
+                                            <option value="1">Low</option>
+                                            <option value="2">Medium</option>
+                                            <option value="3">High</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">Add Task</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tasks List -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Your Tasks</h5>
+                                <div class="btn-group mb-3">
+                                    <button class="btn btn-outline-secondary" onclick="filterTasks('all')">All</button>
+                                    <button class="btn btn-outline-warning" onclick="filterTasks('pending')">Pending</button>
+                                    <button class="btn btn-outline-primary" onclick="filterTasks('in-progress')">In Progress</button>
+                                    <button class="btn btn-outline-success" onclick="filterTasks('completed')">Completed</button>
+                                </div>
+                                <div id="tasksList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Sessions Tab -->
+            <div class="tab-pane fade" id="study" role="tabpanel">
+                <div class="row">
+                    <!-- Study Session Timer -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Study Timer</h5>
+                                <div class="study-timer mb-3" id="studyTimer">00:00:00</div>
+                                <select class="form-select mb-3" id="studySubject">
+                                    <!-- Populated dynamically -->
+                                </select>
+                                <div class="mb-3">
+                                    <label class="form-label">Study Goals</label>
+                                    <div id="studyGoals">
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control study-goal" placeholder="Enter a goal">
+                                            <button class="btn btn-outline-secondary" onclick="addGoalField()">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" id="startStudyBtn" onclick="toggleStudyTimer()">Start Studying</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Study History -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Study History</h5>
+                                <div id="studyHistory"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Study Tips -->
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Study Tips</h5>
+                                <div class="btn-group mb-3">
+                                    <button class="btn btn-outline-primary" onclick="loadStudyTips('focus')">Focus Tips</button>
+                                    <button class="btn btn-outline-success" onclick="loadStudyTips('memory')">Memory Tips</button>
+                                    <button class="btn btn-outline-info" onclick="loadStudyTips('motivation')">Motivation Tips</button>
+                                </div>
+                                <div id="studyTips" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let studyTimer = null;
+        let startTime = null;
+        let elapsedTime = 0;
+        let currentFilter = 'all';
+
+        // Quick action functions
+        function showAddNote() {
+            document.getElementById('notes-tab').click();
+            document.getElementById('noteText').focus();
+        }
+
+        function showMoodCheck() {
+            document.getElementById('notes-tab').click();
+            document.getElementById('moodText').focus();
+        }
+
+        function showAddTask() {
+            document.getElementById('tasks-tab').click();
+            document.getElementById('taskTitle').focus();
+        }
+
+        function startStudySession() {
+            document.getElementById('study-tab').click();
+            document.getElementById('studySubject').focus();
+        }
+
+        async function updateTaskStatus(taskId, newStatus) {
+            try {
+                const response = await fetch(`/update_task_status/${taskId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({status: newStatus})
+                });
+                if (response.ok) {
+                    await updateDisplay();
+                    // Show success message
+                    const statusMsg = document.createElement('div');
+                    statusMsg.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+                    statusMsg.style.zIndex = '1000';
+                    statusMsg.textContent = `Task status updated to ${newStatus}`;
+                    document.body.appendChild(statusMsg);
+                    setTimeout(() => statusMsg.remove(), 3000);
+                } else {
+                    throw new Error('Failed to update task status');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Show error message
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3';
+                errorMsg.style.zIndex = '1000';
+                errorMsg.textContent = 'Failed to update task status';
+                document.body.appendChild(errorMsg);
+                setTimeout(() => errorMsg.remove(), 3000);
+            }
+        }
+
+        // Initialize the application
+        window.onload = async function() {
+            await updateDisplay();
+            populateSubjects();
+            populateNoteCategories();
+            loadStudyTips('focus');
+        };
+
+        // Populate select elements
+        async function populateSubjects() {
+            const response = await fetch('/all_data/');
+            const data = await response.json();
+            const subjects = data.available_subjects;
+            
+            ['taskSubject', 'studySubject'].forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = subjects.map(subject =>
+                    `<option value="${subject}">${subject}</option>`
+                ).join('');
+            });
+        }
+
+        async function populateNoteCategories() {
+            const response = await fetch('/all_data/');
+            const data = await response.json();
+            const categories = data.note_categories;
+            
+            const select = document.getElementById('noteCategory');
+            select.innerHTML = categories.map(category =>
+                `<option value="${category}">${category}</option>`
+            ).join('');
+        }
+
+        // Note handling
+        document.getElementById('noteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const noteData = {
+                note: document.getElementById('noteText').value,
+                category: document.getElementById('noteCategory').value,
+                priority: parseInt(document.getElementById('notePriority').value)
+            };
+
+            try {
+                const response = await fetch('/add_note/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(noteData)
+                });
+                const data = await response.json();
+                document.getElementById('noteText').value = '';
+                await updateDisplay();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Mood handling
+        document.getElementById('moodForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const moodText = document.getElementById('moodText').value;
+            try {
+                const response = await fetch('/mood_check/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text: moodText})
+                });
+                const data = await response.json();
+                const resultDiv = document.getElementById('moodResult');
+                resultDiv.textContent = `${data.mood} - ${data.tip}`;
+                resultDiv.classList.remove('d-none');
+                document.getElementById('moodText').value = '';
+                await updateDisplay();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Task handling
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+                const taskData = {
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                subject: document.getElementById('taskSubject').value,
+                due_date: document.getElementById('taskDueDate').value,
+                priority: parseInt(document.getElementById('taskPriority').value),
+                status: 'pending'
+            };            try {
+                const response = await fetch('/add_task/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(taskData)
+                });
+                const data = await response.json();
+                document.getElementById('taskForm').reset();
+                await updateDisplay();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Study session handling
+        function toggleStudyTimer() {
+            const button = document.getElementById('startStudyBtn');
+            if (!studyTimer) {
+                // Start timer
+                startTime = new Date();
+                studyTimer = setInterval(updateTimer, 1000);
+                button.textContent = 'Stop Studying';
+                button.classList.replace('btn-primary', 'btn-danger');
+            } else {
+                // Stop timer and save session
+                clearInterval(studyTimer);
+                studyTimer = null;
+                const duration = Math.floor((new Date() - startTime) / 60000); // Convert to minutes
+                saveStudySession(duration);
+                button.textContent = 'Start Studying';
+                button.classList.replace('btn-danger', 'btn-primary');
+                document.getElementById('studyTimer').textContent = '00:00:00';
+            }
+        }
+
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - startTime;
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            document.getElementById('studyTimer').textContent = 
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        async function saveStudySession(duration) {
+            const subject = document.getElementById('studySubject').value;
+            const goals = Array.from(document.getElementsByClassName('study-goal'))
+                .map(input => input.value)
+                .filter(goal => goal.trim() !== '');
+
+            const sessionData = {
+                subject: subject,
+                duration: duration,
+                goals: goals,
+                completed_goals: []
+            };
+
+            try {
+                const response = await fetch('/study_session/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(sessionData)
+                });
+                const data = await response.json();
+                await updateDisplay();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function addGoalField() {
+            const goalsDiv = document.getElementById('studyGoals');
+            const newGoal = document.createElement('div');
+            newGoal.className = 'input-group mb-2';
+            newGoal.innerHTML = `
+                <input type="text" class="form-control study-goal" placeholder="Enter a goal">
+                <button class="btn btn-outline-secondary" onclick="this.parentElement.remove()">-</button>
+            `;
+            goalsDiv.appendChild(newGoal);
+        }
+
+        // Study tips handling
+        async function loadStudyTips(category) {
+            try {
+                const response = await fetch(`/study_tips/${category}`);
+                const data = await response.json();
+                const tipsDiv = document.getElementById('studyTips');
+                tipsDiv.innerHTML = data.tips.map(tip =>
+                    `<div class="alert alert-info">${tip}</div>`
+                ).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Display update functions
+        async function updateDisplay() {
+            try {
+                const response = await fetch('/all_data/');
+                const data = await response.json();
+                
+                // Update notes
+                const notesList = document.getElementById('notesList');
+                notesList.innerHTML = data.reminders.map(reminder => `
+                    <div class="alert alert-primary priority-${getPriorityClass(reminder.priority)}">
+                        <h6 class="alert-heading">${reminder.category}</h6>
+                        <p>${reminder.note}</p>
+                        <small>Keywords: ${reminder.keywords.join(', ')}</small>
+                    </div>
+                `).join('');
+
+                // Update moods
+                const moodsList = document.getElementById('moodsList');
+                moodsList.innerHTML = data.mood_logs.map(mood => `
+                    <div class="alert alert-info">
+                        <p>${mood.mood} - ${mood.text}</p>
+                        <small>${new Date(mood.timestamp).toLocaleString()}</small>
+                    </div>
+                `).join('');
+
+                // Update tasks
+                updateTasksList(data.tasks);
+
+                // Update study history
+                const studyHistory = document.getElementById('studyHistory');
+                studyHistory.innerHTML = data.study_sessions.map(session => `
+                    <div class="alert alert-success">
+                        <h6 class="alert-heading">${session.subject}</h6>
+                        <p>Duration: ${session.duration} minutes</p>
+                        <p>Goals: ${session.goals.join(', ')}</p>
+                        <small>${new Date(session.timestamp).toLocaleString()}</small>
+                    </div>
+                `).join('');
+
+                // Update statistics
+                await updateStudyStats();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function updateTasksList(tasks) {
+            const tasksList = document.getElementById('tasksList');
+            const filteredTasks = currentFilter === 'all' 
+                ? tasks 
+                : tasks.filter(task => task.status === currentFilter);
+
+            tasksList.innerHTML = filteredTasks.map(task => {
+                const isCompleted = task.status === 'completed';
+                const isInProgress = task.status === 'in-progress';
+                return `
+                    <div class="alert alert-${getStatusClass(task.status)} priority-${getPriorityClass(task.priority)}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="alert-heading mb-0">${task.title}</h6>
+                            <span class="badge bg-${getStatusClass(task.status)}">${task.status}</span>
+                        </div>
+                        <p class="mb-2">${task.description || 'No description provided'}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small>
+                                    <i class="bi bi-book"></i> ${task.subject}<br>
+                                    <i class="bi bi-calendar"></i> Due: ${task.due_date}
+                                </small>
+                            </div>
+                            <div class="btn-group">
+                                ${!isCompleted ? `
+                                    <button class="btn btn-sm btn-outline-primary ${isInProgress ? 'active' : ''}" 
+                                        onclick="updateTaskStatus('${task.id}', 'in-progress')">
+                                        <i class="bi bi-play-fill"></i> In Progress
+                                    </button>
+                                ` : ''}
+                                ${!isCompleted ? `
+                                    <button class="btn btn-sm btn-outline-success" 
+                                        onclick="updateTaskStatus('${task.id}', 'completed')">
+                                        <i class="bi bi-check2"></i> Complete
+                                    </button>
+                                ` : ''}
+                                ${isCompleted ? `
+                                    <button class="btn btn-sm btn-success" disabled>
+                                        <i class="bi bi-check2-all"></i> Completed
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function updateStudyStats() {
+            try {
+                const response = await fetch('/study_stats/');
+                const stats = await response.json();
+                const statsDiv = document.getElementById('studyStats');
+                statsDiv.innerHTML = `
+                    <p>📚 Total Study Time: ${Math.round(stats.total_study_time_minutes / 60)} hours</p>
+                    <p>✅ Task Completion: ${stats.task_completion_rate}%</p>
+                    <p>📝 Total Notes: ${stats.total_notes}</p>
+                    <p>😊 Mood Track:<br>
+                        Positive: ${stats.mood_tracking.positive}<br>
+                        Neutral: ${stats.mood_tracking.neutral}<br>
+                        Negative: ${stats.mood_tracking.negative}
+                    </p>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Utility functions
+        function getPriorityClass(priority) {
+            return priority === 3 ? 'high' : priority === 2 ? 'medium' : 'low';
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'completed': return 'success';
+                case 'in-progress': return 'warning';
+                default: return 'secondary';
+            }
+        }
+
+        function filterTasks(status) {
+            currentFilter = status;
+            updateDisplay();
+        }
+    </script>
+</body>
+</html>
